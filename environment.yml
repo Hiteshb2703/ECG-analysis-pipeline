@@ -1,0 +1,4 @@
+name: ecg_env
+channels:
+  - defaults
+prefix: C:\Users\hites\miniconda3\envs\ecg_env

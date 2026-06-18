@@ -20,6 +20,8 @@ a five stage pipeline:
 
 ## Pipeline
     ECG.dat → bandpass_filter() → extract_all_peaks() → extract_features() → Ollama LLM → ECG_Report.pdf
+## Dataset
+The data used in this project is sourced from the **MIT-BIH Arrhythmia Database**, a standard reference for evaluating arrhythmia detectors.
 
 ## How to run
 

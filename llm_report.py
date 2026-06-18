@@ -1,79 +1,35 @@
-<<<<<<< HEAD
-import subprocess
+import requests
 
-def generate_ecg_report_with_ollama(features):
-    hr = features.get('Heart_Rate_BPM', 0)
-    is_abnormal = features.get('Arrhythmia_detected', False)
+def generate_llm_interpretation(features):
+    """
+    Sends ECG features to a local Ollama instance and returns a clinical summary.
+    """
+    model = "llama3" 
     
-    report_text = (
-        f"ECG ANALYSIS REPORT\n"
-        f"-------------------\n"
-        f"Rhythm: {'Abnormal (Arrhythmia Detected)' if is_abnormal else 'Normal Sinus Rhythm'}\n"
-        f"Heart Rate: {hr:.1f} BPM\n"
-        f"Clinical Note: The signal from MIT-BIH dataset shows morphology "
-        f"{'consistent with ventricular ectopic beats.' if is_abnormal else 'within normal limits.'}\n"
-    )
-
-    try:
-        prompt = f"Summarize this ECG data: {features}"
-        result = subprocess.run(['ollama', 'run', 'llama3', prompt], capture_output=True, text=True, timeout=2)
-        return result.stdout if result.stdout else report_text
-    except:
-        return report_text
-=======
-import subprocess
-
-def generate_ecg_report_with_ollama(features):
-    """
-    Generate a human-readable ECG report using Ollama LLaMA 3.2 model.
-
-    Args:
-        features (dict): Dictionary containing extracted ECG features, e.g.,
-            {
-                "heart_rate": 120,
-                "rr_mean": 0.5,
-                "rr_std": 0.04,
-                "sdnn": 35,
-                "rmssd": 30,
-                "pnn50": 12,
-                "qrs_mean": 0.1,
-                "st_mean": 0.05,
-                "r_peak_count": 800,
-                "arrhythmia": "Yes"
-            }
-
-    Returns:
-        str: Generated ECG interpretation.
-    """
-
-    # Construct the prompt dynamically from features
     prompt = f"""
-    Patient ECG Analysis:
-    - Heart Rate: {features.get('Heart_Rate_BPM', 'N/A')} bpm
-    - RR Interval Mean: {features.get('RR_mean_s', 'N/A')} s
-    - RR Interval Std: {features.get('RR_std_s', 'N/A')} s
-    - SDNN: {features.get('SDNN_ms', 'N/A')} ms
-    - RMSSD: {features.get('RMSSD_ms', 'N/A')} ms
-    - pNN50: {features.get('pNN50_percent', 'N/A')}%
-    - QRS Duration Mean: {features.get('QRS_mean_s', 'N/A')} s
-    - ST Segment Mean: {features.get('ST_mean_s', 'N/A')} s
-    - R Peak Count: {features.get('R_peak_count', 'N/A')}
-    - Arrhythmia Detected: {features.get('Arrhythmia_detected', 'Unknown')}
+    You are a cardiologist's assistant. Analyze the following extracted ECG metrics:
+    - Heart Rate: {features.get('hr', 'N/A')} bpm
+    - HRV (RMSSD): {features.get('rmssd', 'N/A')} ms
+    - QRS Duration: {features.get('qrs_dur', 'N/A')} ms
+    - PR Interval: {features.get('pr_int', 'N/A')} ms
+    - QT Interval: {features.get('qt_int', 'N/A')} ms
+
+    Provide a brief, professional clinical summary of these findings. 
+    Keep the tone objective and concise.
     """
 
-    # Run Ollama subprocess
+    url = "http://localhost:11434/api/generate"
+    
+    data_to_send = {
+        "model": model,
+        "prompt": prompt,
+        "stream": False 
+    }
+
     try:
-        result = subprocess.run(
-        ["ollama", "run", "llama3.2"],
-        input=prompt,
-        capture_output=True,
-        text=True,
-        encoding="utf-8",
-        check=True
-    )
+        response = requests.post(url, json=data_to_send)
+        result = response.json()
+        return result.get("response", "Error: No response from LLM.")
 
-        return result.stdout.strip()
-
-    except subprocess.CalledProcessError as e:
-        return f"Error running Ollama: {e.stderr}"
->>>>>>> 3952caf0e3a2b39da37dc33231d04ec6179eacae
+    except Exception as e:
+        return f"LLM Error: Could not connect to Ollama. ({e})"

@@ -7,11 +7,8 @@ from datetime import datetime
 import numpy as np
 
 def header_footer(canvas, doc):
-    # Header
     canvas.setFont("Helvetica-Bold", 16)
     canvas.drawString(40, 820, "ECG Diagnostic Report")
-
-    # Footer
     canvas.setFont("Helvetica", 8)
     canvas.drawRightString(550, 20, f"Page {doc.page}")
 
@@ -32,10 +29,6 @@ def create_ecg_report(features, interpretation_text, plot_path=None, filename="E
     styles.add(ParagraphStyle(name="NormalText", fontSize=10, leading=13))
 
     story = []
-
-    # -------------------------------
-    # Patient Info Section
-    # -------------------------------
     story.append(Paragraph("Patient Information", styles["SectionTitle"]))
 
     patient_table_data = [
@@ -52,10 +45,6 @@ def create_ecg_report(features, interpretation_text, plot_path=None, filename="E
     ]))
     story.append(patient_table)
     story.append(Spacer(1, 15))
-
-    # -------------------------------
-    # ECG Features Section
-    # -------------------------------
     story.append(Paragraph("ECG Features", styles["SectionTitle"]))
 
     feature_data = [["Feature", "Value"]]
@@ -66,9 +55,12 @@ def create_ecg_report(features, interpretation_text, plot_path=None, filename="E
             continue
         feature_data.append([k.replace("_", " ").title(), str(v)])
 
-    feature_data.append(["RR Intervals (s)", f"Mean: {np.mean(features['RR_intervals_s']):.3f}, Max: {np.max(features['RR_intervals_s']):.3f}"])
-    feature_data.append(["QRS Widths (s)", f"Mean: {np.mean(features['QRS_widths_s']):.3f}, Max: {np.max(features['QRS_widths_s']):.3f}"])
-    feature_data.append(["ST Intervals (s)", f"Mean: {np.nanmean(features['ST_intervals_s']):.3f}, Max: {np.nanmax(features['ST_intervals_s']):.3f}"])
+    def safe_val(arr, func):
+        return func(arr) if len(arr) > 0 and not np.all(np.isnan(arr)) else 0.0
+
+    feature_data.append(["RR Intervals (s)", f"Mean: {safe_val(features.get('RR_intervals_s', []), np.mean):.3f}"])
+    feature_data.append(["QRS Widths (s)", f"Mean: {safe_val(features.get('QRS_widths_s', []), np.mean):.3f}"])
+    feature_data.append(["ST Intervals (s)", f"Mean: {safe_val(features.get('ST_intervals_s', []), np.nanmean):.3f}"])
     feature_table = Table(feature_data, colWidths=[200, 200])
     feature_table.setStyle(TableStyle([
         ("BACKGROUND", (0,0), (-1,0), colors.lightblue),
@@ -79,10 +71,6 @@ def create_ecg_report(features, interpretation_text, plot_path=None, filename="E
 
     story.append(feature_table)
     story.append(Spacer(1, 15))
-
-    # -------------------------------
-    # Interpretation
-    # -------------------------------
     story.append(Paragraph("Automated Interpretation", styles["SectionTitle"]))
 
     for line in interpretation_text.split("\n"):
@@ -92,13 +80,10 @@ def create_ecg_report(features, interpretation_text, plot_path=None, filename="E
         story.append(Paragraph(line, styles["NormalText"]))
         story.append(Spacer(1, 4))
 
-    # ------------------------------
-    # ECG Plot
-    # ------------------------------
     if plot_path:
         story.append(Paragraph("ECG Waveform", styles["SectionTitle"]))
         story.append(Image(plot_path, width=500, height=200))
         story.append(Spacer(1, 20))
 
     doc.build(story)
-    print(f"✔ PDF saved as: {filename}")
+    print(f"PDF saved as: {filename}")

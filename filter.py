@@ -1,6 +1,6 @@
 from scipy.signal import butter, filtfilt
 
-fs = 500
+fs = 125
 lowcut = 0.5
 highcut = 40.0
 

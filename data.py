@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import pandas as pd
 import numpy as np
 import os
@@ -22,9 +21,3 @@ def load_ecg_data():
         signal = df.iloc[0, :-1].values
 
     return np.tile(signal, 5)
-=======
-import numpy as np
-
-ecg = np.loadtxt(r"C:\Users\hites\OneDrive\Documents\GitHub\ECG\ECG.dat")
-print(ecg.shape)
->>>>>>> 3952caf0e3a2b39da37dc33231d04ec6179eacae

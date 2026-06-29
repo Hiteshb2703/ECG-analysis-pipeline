@@ -36,6 +36,9 @@ ollama serve
 python main.py
 ```
 
+## Results
+The pipeline was validated on records from the MIT-BIH Arrhythmia Database, demonstrating reliable ECG preprocessing, waveform delineation, interval computation, and automated report generation.
+
 ## Design decisions
 
 1. Local LLM over cloud API: ECG data is sensitive,keeping inference 
@@ -48,4 +51,7 @@ python main.py
 ## Limitations
 
 1. Peak detection uses fixed windows relative to R.
-2. Not validated against annotated databases like MIT-BIH Arrhythmia Database.
+2. The pipeline currently processes single-channel recordings. It does not utilize multi-lead information available in standard 12-lead ECG systems.
+3. Designed for offline analysis of recorded ECG signals rather than real-time monitoring.
+4. Validated primarily on representative MIT-BIH Arrhythmia Database records.
+5. The system relies on deterministic DSP techniques rather than learned deep-learning models. It may limit performance on highly noisy or unusual ECG recordings.
